@@ -25,21 +25,18 @@ public class Session {
     private PrintStream printStream;
 
     public void startSession() {
-        try{
+        try {
             String logString = logReader.readLog();
             while (logString != null) {
                 Log log = Log.toLog(logString);
                 if (filter.filter(log)) {
                     analyzer.analyzeLog(log);
-                    System.out.println(logString);
                 }
                 logString = logReader.readLog();
             }
-        } catch (IOException e) {
-            printStream.println("Error occurred while reading the log file.");
-            return;
-        } catch (LogParseException e) {
-            printStream.println(e.getMessage());
+        } catch (IOException | LogParseException e) {
+            printStream.println(e instanceof LogParseException ? e.getMessage()
+                : "Error occurred while reading the log file.");
             return;
         }
         List<Path> pathList = logReader.pathsOut().stream().toList();
