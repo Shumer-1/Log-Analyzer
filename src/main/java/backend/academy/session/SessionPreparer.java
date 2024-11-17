@@ -22,6 +22,7 @@ public class SessionPreparer {
 
     private PrintStream errorPrintStream;
 
+    @SuppressWarnings("ReturnCount")
     public void sessionPrepare(String[] args) {
         Config config;
         try {
@@ -44,7 +45,7 @@ public class SessionPreparer {
         } catch (IOException | InterruptedException e) {
             errorPrintStream.println("Problem getting log file.");
             return;
-        } catch (SetUpReaderException e){
+        } catch (SetUpReaderException e) {
             errorPrintStream.println(e.getMessage());
             return;
         }
@@ -59,8 +60,8 @@ public class SessionPreparer {
                 printStream = new PrintStream("./output.md");
                 writer = new Writer(OutputFormat.MARKDOWN, printStream);
             }
-        } catch (IOException e){
-            System.out.println("Problem getting statistics file.");
+        } catch (IOException e) {
+            errorPrintStream.println("Problem getting statistics file.");
             return;
         }
 
