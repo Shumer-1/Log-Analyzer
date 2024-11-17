@@ -1,6 +1,5 @@
 package backend.academy.logReader;
 
-import lombok.Getter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -15,6 +14,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import lombok.Getter;
 
 public class FilesLogReader implements LogReader {
 
@@ -26,11 +26,8 @@ public class FilesLogReader implements LogReader {
 
     public FilesLogReader(String path) throws IOException {
         findFiles(Path.of(path));
-        for (Path path1 : paths) {
-            System.out.println(path1);
-        }
         pathsOut = paths.stream().toList();
-        if (paths.isEmpty()){
+        if (paths.isEmpty()) {
             throw new IOException("No such files.");
         }
         pathToCurrentFile = paths.getFirst();
@@ -43,7 +40,8 @@ public class FilesLogReader implements LogReader {
 
             Path resolvedPath = path.isAbsolute() ? path : currentDir.resolve(path);
 
-            if (Files.exists(resolvedPath) && !resolvedPath.toString().contains("*") && !resolvedPath.toString().contains("?")) {
+            if (Files.exists(resolvedPath) && !resolvedPath.toString().contains("*")
+                && !resolvedPath.toString().contains("?")) {
                 if (Files.isDirectory(resolvedPath)) {
                     Files.walkFileTree(resolvedPath, new SimpleFileVisitor<Path>() {
                         @Override
@@ -73,7 +71,6 @@ public class FilesLogReader implements LogReader {
             System.err.println("Error while searching files: " + e.getMessage());
         }
     }
-
 
     @Override
     public String readLog() throws IOException {
