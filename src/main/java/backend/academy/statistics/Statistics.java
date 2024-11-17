@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("RecordComponentNumber")
 public record Statistics(List<Path> filenames,
                          LocalDate startDate,
                          LocalDate endDate,
