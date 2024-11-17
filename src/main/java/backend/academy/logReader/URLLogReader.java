@@ -21,6 +21,8 @@ public class URLLogReader implements LogReader {
     private HttpResponse<InputStream> response;
     private BufferedReader reader;
     @Getter private List<Path> pathsOut = new ArrayList<>();
+    private final int successfulStatusCode = 200;
+    private final String correctContentType = "text/plain";
 
     public URLLogReader(String url) throws SetUpReaderException, IOException, InterruptedException {
         this.url = url;
@@ -29,7 +31,7 @@ public class URLLogReader implements LogReader {
         request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .GET()
-            .header("Accept", "text/plain")
+            .header("Accept", correctContentType)
             .build();
         setUpReader();
     }
@@ -39,7 +41,7 @@ public class URLLogReader implements LogReader {
 
         String contentType = response.headers().firstValue("Content-Type").orElse("");
 
-        if (response.statusCode() == 200 && contentType.contains("text/plain")) {
+        if (response.statusCode() == successfulStatusCode && contentType.contains(correctContentType)) {
             reader = new BufferedReader(new InputStreamReader(response.body()));
         } else {
             throw new SetUpReaderException(
