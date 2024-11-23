@@ -2,6 +2,7 @@ package backend.academy.log;
 
 import backend.academy.exceptions.LogParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
@@ -13,46 +14,37 @@ public record Log(String clientIpAddress, String userId, String username,
 
     public static Log toLog(String logLine) throws LogParseException {
         try {
-            String log = logLine;
-            String clientIpAddress = log.substring(0, log.indexOf(' '));
-            log = log.substring(log.indexOf(' ') + 1);
+            String log = logLine.replaceAll("[\\[\\]\"\n]", "");
 
-            String clientId = log.substring(0, log.indexOf(' '));
-            log = log.substring(log.indexOf(' ') + 1);
+            String[] parts = log.split(" ");
+            int partNumber = 0;
+            String clientIpAddress = parts[partNumber++];
 
-            String username = log.substring(0, log.indexOf(' '));
-            log = log.substring(log.indexOf(' ') + 1);
+            String clientId = parts[partNumber++];
 
-            int cursor = 0;
-            while (log.charAt(cursor) != ']') {
-                cursor++;
+            String username = parts[partNumber++];
+
+            LocalDate timestamp = getDate(parts[partNumber++]);
+
+            partNumber++;
+
+            Request request = new Request(parts[partNumber++], parts[partNumber++], parts[partNumber++]);
+
+            int httpStatusCode = Integer.parseInt(parts[partNumber++]);
+
+            long responseSize = Long.parseLong(parts[partNumber++]);
+
+            String referrer = parts[partNumber++];
+
+            String userAgent;
+            StringBuilder temp = new StringBuilder();
+            for (int i = partNumber; i < parts.length; i++) {
+                temp.append(parts[i]);
+                if (i != parts.length - 1) {
+                    temp.append(" ");
+                }
             }
-            cursor++;
-            LocalDate timestamp = getDate(log.substring(0, cursor));
-            log = log.substring(cursor + 1);
-
-            cursor = 1;
-            while (log.charAt(cursor) != '"') {
-                cursor++;
-            }
-            cursor++;
-            Request request = Request.toRequest(log.substring(1, cursor - 1));
-            log = log.substring(cursor + 1);
-
-            int httpStatusCode = Integer.parseInt(log.substring(0, log.indexOf(' ')));
-            log = log.substring(log.indexOf(' ') + 1);
-
-            long responseSize = Long.parseLong(log.substring(0, log.indexOf(' ')));
-            log = log.substring(log.indexOf(' ') + 1);
-
-            cursor = 1;
-            while (log.charAt(cursor) != '"') {
-                cursor++;
-            }
-            cursor++;
-            String referrer = log.substring(1, cursor - 1);
-
-            String userAgent = log.substring(cursor + 2, log.length() - 2);
+            userAgent = temp.toString();
 
             return new Log(clientIpAddress, clientId, username,
                 timestamp, request, httpStatusCode,
@@ -63,13 +55,8 @@ public record Log(String clientIpAddress, String userId, String username,
     }
 
     private static LocalDate getDate(String timestamp) throws DateTimeParseException {
-        int cursor = 0;
-        while (timestamp.charAt(cursor) != ':') {
-            cursor++;
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy", Locale.ENGLISH);
-        String date = timestamp.substring(1, cursor);
-        return LocalDate.parse(date, formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss", Locale.ENGLISH);
+        LocalDateTime dateTime = LocalDateTime.parse(timestamp, formatter);
+        return dateTime.toLocalDate();
     }
 }
